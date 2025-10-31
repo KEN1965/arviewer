@@ -2,62 +2,90 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ARビューア＋写真撮影</title>
+  <title>ARビューア（中央ボタン）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- model-viewer 読み込み -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
   <style>
     body {
       margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(180deg, #f7f9fc, #e3e9f1);
       text-align: center;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
     }
+
     header {
       background-color: #0078d7;
       color: white;
-      padding: 12px;
+      width: 100%;
+      padding: 14px;
       font-size: 18px;
       font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
+
     model-viewer {
       width: 100%;
       height: 70vh;
-      background-color: white;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     .controls {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
+      gap: 10px;
     }
+
     input[type="file"] {
       display: none;
     }
-    label, button {
+
+    label {
+      display: inline-block;
       background-color: #0078d7;
       color: white;
-      padding: 10px 20px;
-      border-radius: 25px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-      transition: background 0.3s;
+      font-size: 18px;
+      padding: 14px 28px;
+      border-radius: 30px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      transition: background 0.3s, transform 0.2s;
     }
-    label:hover, button:hover {
+
+    label:hover {
       background-color: #005fa3;
+      transform: scale(1.05);
     }
+
+    .note {
+      font-size: 13px;
+      color: #444;
+    }
+
     footer {
       font-size: 12px;
       color: #666;
-      padding: 10px 0;
+      margin-top: auto;
+      padding-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-  <header>📱 ARビューア + 写真撮影</header>
+  <header>📱 お試しARビューア</header>
 
   <model-viewer id="viewer"
     ar
@@ -68,40 +96,24 @@
   </model-viewer>
 
   <div class="controls">
-    <label for="fileInput">ファイルを選択</label>
+    <label for="fileInput">📂 ファイルを選択 (.glb / .usdz)</label>
     <input type="file" id="fileInput" accept=".glb,.gltf,.usdz">
-    <button id="captureBtn">📸 写真を撮る</button>
+    <div class="note">iPhoneはUSDZ、AndroidはGLB形式が最適です</div>
   </div>
 
-  <footer>© 2025 AR Viewer with Capture</footer>
+  <footer>© 2025 AR Viewer Sample</footer>
 
   <script>
     const input = document.getElementById('fileInput');
     const viewer = document.getElementById('viewer');
-    const captureBtn = document.getElementById('captureBtn');
-
-    // ファイル選択でモデル読み込み
     input.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (file) {
         const url = URL.createObjectURL(file);
         viewer.src = url;
-      }
-    });
-
-    // 写真を撮って保存
-    captureBtn.addEventListener('click', async () => {
-      try {
-        const canvas = await viewer.toBlob({ idealAspect: true });
-        const blob = new Blob([canvas], { type: 'image/png' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'ar_capture.png';
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        alert("撮影に対応していません（ARモード中は撮影不可です）");
+        // ファイル選択後に中央ボタンを少し下げて非表示気味にする
+        document.querySelector('.controls').style.top = '90%';
+        document.querySelector('.controls').style.transform = 'translate(-50%, -50%) scale(0.9)';
       }
     });
   </script>
