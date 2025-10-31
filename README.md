@@ -1,6 +1,6 @@
 📱 お試しARビューア / Simple AR Viewer
 
-このWebアプリは、スマートフォンで3Dモデル（.glb / .usdz）を手軽にAR表示できる
+このWebアプリは、スマートフォンで3Dモデル（.glb）を手軽にAR表示できる
 シンプルなWebビューアです。
 GitHub Pagesで公開すれば、誰でもアクセスしてその場で体験できます。
 
@@ -8,7 +8,7 @@ GitHub Pagesで公開すれば、誰でもアクセスしてその場で体験�
 
 iPhone・Androidの両方に対応
 
-.glb, .gltf, .usdz ファイルを読み込んでその場で3D表示
+.glb, .gltfファイルを読み込んでその場で3D表示
 
 スマホでは「ARモード」に切り替えて現実空間に配置可能
 
@@ -16,7 +16,7 @@ iPhone・Androidの両方に対応
 
 📸 対応フォーマットと動作環境
 デバイス	対応フォーマット	ブラウザ	AR表示方法
-iPhone / iPad	.usdz	Safari	Quick Look（AR Quick Look）
+iPhone / iPad	.glb	
 Android	.glb / .gltf	Chrome	Scene Viewer
 🚀 使い方
 
@@ -24,7 +24,7 @@ Android	.glb / .gltf	Chrome	Scene Viewer
 
 画面中央の「📂 ファイルを選択」ボタンを押す
 
-.glb または .usdz ファイルを選択
+.glbファイルを選択
 
 3Dモデルが表示され、「AR」ボタンを押すと現実空間に配置できます
 
