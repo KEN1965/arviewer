@@ -2,105 +2,106 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>スマホで3DモデルARビューア</title>
+  <title>ARビューア＋写真撮影</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- model-viewer の読み込み -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(180deg, #f7f8fa, #e8ebf0);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    header {
-      width: 100%;
-      background-color: #0066cc;
-      color: white;
-      padding: 14px;
+      background: linear-gradient(180deg, #f7f9fc, #e3e9f1);
       text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
-
+    header {
+      background-color: #0078d7;
+      color: white;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: 600;
+    }
     model-viewer {
       width: 100%;
-      height: 75vh;
+      height: 70vh;
       background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
     }
-
     .controls {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
       gap: 12px;
-      padding: 10px;
+      padding: 12px;
     }
-
     input[type="file"] {
       display: none;
     }
-
-    .file-label {
-      background-color: #0066cc;
+    label, button {
+      background-color: #0078d7;
       color: white;
       padding: 10px 20px;
       border-radius: 25px;
+      border: none;
       font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
       transition: background 0.3s;
     }
-
-    .file-label:hover {
-      background-color: #0052a3;
+    label:hover, button:hover {
+      background-color: #005fa3;
     }
-
-    .note {
+    footer {
       font-size: 12px;
-      color: #555;
-      text-align: center;
+      color: #666;
+      padding: 10px 0;
     }
   </style>
 </head>
 <body>
 
-  <header>📱 スマホで3DモデルAR体験</header>
+  <header>📱 ARビューア + 写真撮影</header>
 
   <model-viewer id="viewer"
     ar
     ar-modes="scene-viewer quick-look webxr"
     camera-controls
     auto-rotate
-    environment-image="neutral"
     exposure="1">
   </model-viewer>
 
   <div class="controls">
-    <label for="fileInput" class="file-label">ファイルを選択 (.glb / .usdz)</label>
+    <label for="fileInput">ファイルを選択</label>
     <input type="file" id="fileInput" accept=".glb,.gltf,.usdz">
-    <p class="note">※iPhoneはUSDZ、AndroidはGLBが最適です</p>
+    <button id="captureBtn">📸 写真を撮る</button>
   </div>
+
+  <footer>© 2025 AR Viewer with Capture</footer>
 
   <script>
     const input = document.getElementById('fileInput');
     const viewer = document.getElementById('viewer');
+    const captureBtn = document.getElementById('captureBtn');
 
+    // ファイル選択でモデル読み込み
     input.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (file) {
         const url = URL.createObjectURL(file);
         viewer.src = url;
+      }
+    });
+
+    // 写真を撮って保存
+    captureBtn.addEventListener('click', async () => {
+      try {
+        const canvas = await viewer.toBlob({ idealAspect: true });
+        const blob = new Blob([canvas], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ar_capture.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert("撮影に対応していません（ARモード中は撮影不可です）");
       }
     });
   </script>
