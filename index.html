@@ -2,13 +2,9 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>３Dモデル & Photo で AR体験</title>
+    <title>GLB・USDZ・写真ARビューア</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- model-viewer -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-    <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/webxr/ARButton.js"></script>
 
@@ -18,7 +14,7 @@
         padding: 0;
         height: 100%;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background-color: #f2f5f8; /* シンプルな淡いグレー背景 */
+        background-color: #f2f5f8;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -41,10 +37,6 @@
       model-viewer {
         width: 100%;
         height: 70vh;
-        display: none;
-      }
-
-      canvas {
         display: none;
       }
 
@@ -75,6 +67,13 @@
         transform: scale(1.05);
       }
 
+      p {
+        color: #333;
+        font-size: 15px;
+        max-width: 90%;
+        line-height: 1.5;
+      }
+
       #tip {
         position: fixed;
         bottom: 30px;
@@ -88,37 +87,35 @@
         display: none;
       }
 
-      @media (max-width: 768px) {
-        label {
-          font-size: 16px;
-          padding: 14px 28px;
-        }
-        header {
-          font-size: 16px;
-        }
+      footer {
+        position: absolute;
+        bottom: 10px;
+        font-size: 13px;
+        color: #555;
       }
     </style>
   </head>
 
   <body>
+    <header>GLB・USDZ・写真ARビューア</header>
 
-    <header>３DModel & Photo AR体験Viewer</header>
+    <div class="controls">
+      <p>📱 Androidは <b>.glb</b>、iPhoneは <b>.usdz</b>、写真ARは <b>.jpg / .png</b> を選んでください。</p>
+      <label for="fileInput">📂 ファイルを選択</label>
+      <input type="file" id="fileInput" accept=".glb,.usdz,.jpg,.jpeg,.png">
+    </div>
 
-    <!-- 3Dモデル用 -->
     <model-viewer id="viewer"
       ar
-      ar-modes="scene-viewer webxr"
+      ar-modes="scene-viewer quick-look webxr"
       camera-controls
       auto-rotate
       exposure="1">
     </model-viewer>
 
-    <div class="controls">
-      <label for="fileInput">📂 ファイルを選択 (.glb / .png / .jpg)</label>
-      <input type="file" id="fileInput" accept=".glb,.gltf,image/*">
-    </div>
-
     <div id="tip">📸 タップして写真を配置できます</div>
+
+    <footer>© 2025 Digital School LOCO</footer>
 
     <script>
       const viewer = document.getElementById("viewer");
@@ -195,15 +192,24 @@
         if (!file) return;
         const url = URL.createObjectURL(file);
 
-        if (file.name.endsWith(".glb") || file.name.endsWith(".gltf")) {
-          // GLBモード
+        // モード切り替え
+        if (file.name.endsWith(".glb")) {
           isPhotoMode = false;
           viewer.style.display = "block";
           renderer.domElement.style.display = "none";
           tip.style.display = "none";
           viewer.src = url;
-        } else if (file.type.startsWith("image/")) {
-          // 写真モード
+          viewer.removeAttribute("ios-src");
+        } 
+        else if (file.name.endsWith(".usdz")) {
+          isPhotoMode = false;
+          viewer.style.display = "block";
+          renderer.domElement.style.display = "none";
+          tip.style.display = "none";
+          viewer.src = url;
+          viewer.setAttribute("ios-src", url);
+        } 
+        else if (file.type.startsWith("image/")) {
           isPhotoMode = true;
           viewer.style.display = "none";
           renderer.domElement.style.display = "block";
@@ -216,7 +222,7 @@
         }
       });
 
-      // --- タップで配置 ---
+      // --- 写真配置 ---
       function onSelect() {
         if (!isPhotoMode || !photoTexture || !reticle.visible) return;
         const geometry = new THREE.PlaneGeometry(0.5, 0.35);
