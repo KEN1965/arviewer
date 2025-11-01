@@ -2,245 +2,139 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>GLB・USDZ・写真ARビューア</title>
+    <title>AR Viewer Diagnostic Test</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/webxr/ARButton.js"></script>
-
     <style>
       html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
+        margin: 0; padding: 0; height: 100%;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background-color: #f2f5f8;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
         text-align: center;
       }
-
       header {
-        position: absolute;
-        top: 0;
-        width: 100%;
-        background-color: #0078d7;
-        color: white;
-        padding: 14px 0;
-        font-size: 18px;
-        font-weight: 600;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        position: absolute; top: 0; width: 100%;
+        background-color: #0078d7; color: white;
+        padding: 14px 0; font-size: 18px; font-weight: 600;
       }
-
-      model-viewer {
-        width: 100%;
-        height: 70vh;
-        display: none;
-      }
-
-      .controls {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        gap: 20px;
-      }
-
-      input[type="file"] { display: none; }
-
       label {
-        background-color: #0078d7;
-        color: white;
-        padding: 16px 32px;
-        border-radius: 40px;
-        font-size: 18px;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
+        background-color: #0078d7; color: white;
+        padding: 14px 28px; border-radius: 30px;
+        cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: 0.3s;
       }
-
-      label:hover {
-        background-color: #005fa3;
-        transform: scale(1.05);
+      label:hover { background-color: #005fa3; }
+      input[type="file"] { display: none; }
+      #log {
+        background: #fff; border-radius: 8px; padding: 12px; width: 85%;
+        margin-top: 20px; font-size: 14px; color: #333;
+        text-align: left; white-space: pre-line;
       }
-
-      p {
-        color: #333;
-        font-size: 15px;
-        max-width: 90%;
-        line-height: 1.5;
-      }
-
-      #tip {
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.6);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-        display: none;
-      }
-
       footer {
-        position: absolute;
-        bottom: 10px;
-        font-size: 13px;
-        color: #555;
+        position: absolute; bottom: 10px; font-size: 12px; color: #555;
       }
     </style>
   </head>
 
   <body>
-    <header>GLB・USDZ・写真ARビューア</header>
+    <header>🔍 AR Viewer Diagnostic Test</header>
 
-    <div class="controls">
-      <p>📱 Androidは <b>.glb</b>、iPhoneは <b>.usdz</b>、写真ARは <b>.jpg / .png</b> を選んでください。</p>
-      <label for="fileInput">📂 ファイルを選択</label>
-      <input type="file" id="fileInput" accept=".glb,.usdz,.jpg,.jpeg,.png">
-    </div>
+    <label for="fileInput">📂 ファイルを選択 (.glb / .usdz / .jpg / .png)</label>
+    <input type="file" id="fileInput" accept=".glb,.usdz,.jpg,.jpeg,.png">
 
-    <model-viewer id="viewer"
-      ar
-      ar-modes="scene-viewer quick-look webxr"
-      camera-controls
-      auto-rotate
-      exposure="1">
-    </model-viewer>
-
-    <div id="tip">📸 タップして写真を配置できます</div>
-
+    <div id="log">🔹 状態をチェック中...</div>
     <footer>© 2025 Digital School LOCO</footer>
 
     <script>
-      const viewer = document.getElementById("viewer");
+      const log = document.getElementById("log");
       const fileInput = document.getElementById("fileInput");
-      const tip = document.getElementById("tip");
 
-      let isPhotoMode = false;
-      let photoTexture = null;
-
-      // --- Three.js ---
-      let scene, camera, renderer, reticle, controller, hitTestSource, hitTestSourceRequested;
-      initThree();
-
-      function initThree() {
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.xr.enabled = true;
-        document.body.appendChild(renderer.domElement);
-        renderer.domElement.style.display = "none";
-
-        document.body.appendChild(
-          THREE.ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
-        );
-
-        const ringGeo = new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        reticle = new THREE.Mesh(ringGeo, ringMat);
-        reticle.visible = false;
-        scene.add(reticle);
-
-        controller = renderer.xr.getController(0);
-        controller.addEventListener("select", onSelect);
-        scene.add(controller);
-
-        renderer.setAnimationLoop((timestamp, frame) => {
-          if (frame) {
-            const referenceSpace = renderer.xr.getReferenceSpace();
-            const session = renderer.xr.getSession();
-
-            if (!hitTestSourceRequested) {
-              session.requestReferenceSpace("viewer").then((refSpace) => {
-                session.requestHitTestSource({ space: refSpace }).then((source) => {
-                  hitTestSource = source;
-                });
-              });
-              session.addEventListener("end", () => {
-                hitTestSourceRequested = false;
-                hitTestSource = null;
-              });
-              hitTestSourceRequested = true;
-            }
-
-            if (hitTestSource) {
-              const hitTestResults = frame.getHitTestResults(hitTestSource);
-              if (hitTestResults.length > 0) {
-                const hit = hitTestResults[0];
-                const pose = hit.getPose(referenceSpace);
-                reticle.visible = true;
-                reticle.matrix.fromArray(pose.transform.matrix);
-              } else {
-                reticle.visible = false;
-              }
-            }
-          }
-          renderer.render(scene, camera);
-        });
+      // ログ出力補助
+      function write(msg) {
+        console.log(msg);
+        log.textContent += `\n${msg}`;
       }
 
-      // --- ファイル選択 ---
-      fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
+      // 初期チェック
+      write("✅ JavaScript 実行開始");
+      if (window.isSecureContext) {
+        write("🔒 HTTPS環境です（OK）");
+      } else {
+        write("⚠️ HTTP または file:// で開いています。HTTPSで再度試してください。");
+      }
+
+      if ('xr' in navigator) {
+        write("🧭 WebXR API 検出: 利用可能です");
+      } else {
+        write("⚠️ WebXR API が検出されません。Safari設定で WebXR を有効化してください。");
+      }
+
+      if (navigator.userAgent.includes("iPhone")) write("📱 iPhoneでアクセスしています。");
+      if (navigator.userAgent.includes("Android")) write("🤖 Androidでアクセスしています。");
+
+      // ファイル選択イベント
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
         if (!file) return;
+        write(`📁 ファイル選択: ${file.name}`);
+
+        const ext = file.name.split('.').pop().toLowerCase();
         const url = URL.createObjectURL(file);
 
-        // モード切り替え
-        if (file.name.endsWith(".glb")) {
-          isPhotoMode = false;
-          viewer.style.display = "block";
-          renderer.domElement.style.display = "none";
-          tip.style.display = "none";
-          viewer.src = url;
-          viewer.removeAttribute("ios-src");
-        } 
-        else if (file.name.endsWith(".usdz")) {
-          isPhotoMode = false;
-          viewer.style.display = "block";
-          renderer.domElement.style.display = "none";
-          tip.style.display = "none";
-          viewer.src = url;
-          viewer.setAttribute("ios-src", url);
-        } 
-        else if (file.type.startsWith("image/")) {
-          isPhotoMode = true;
-          viewer.style.display = "none";
-          renderer.domElement.style.display = "block";
-          tip.style.display = "block";
-          const loader = new THREE.TextureLoader();
-          loader.load(url, (texture) => {
-            photoTexture = texture;
-            alert("✅ 画像を読み込みました！ARで配置できます。");
-          });
+        if (ext === "glb") {
+          write("🧊 GLBファイルとして検出。<model-viewer> に読み込みます。");
+          testModelViewer(url);
+        } else if (ext === "usdz") {
+          write("🍏 USDZファイルとして検出。Quick Look対応。");
+          testModelViewer(url, true);
+        } else if (["jpg","jpeg","png"].includes(ext)) {
+          write("🖼 画像ファイルとして検出。Three.jsで読み込みます。");
+          testThree(url);
+        } else {
+          write("❓ 未対応の拡張子です。");
         }
       });
 
-      // --- 写真配置 ---
-      function onSelect() {
-        if (!isPhotoMode || !photoTexture || !reticle.visible) return;
-        const geometry = new THREE.PlaneGeometry(0.5, 0.35);
-        const material = new THREE.MeshBasicMaterial({
-          map: photoTexture,
-          side: THREE.DoubleSide,
-        });
-        const photo = new THREE.Mesh(geometry, material);
-        photo.position.setFromMatrixPosition(reticle.matrix);
-        photo.quaternion.setFromRotationMatrix(reticle.matrix);
-        scene.add(photo);
+      // --- model-viewerテスト ---
+      function testModelViewer(url, isUSDZ = false) {
+        const mv = document.createElement("model-viewer");
+        mv.setAttribute("ar", "");
+        mv.setAttribute("camera-controls", "");
+        mv.setAttribute("auto-rotate", "");
+        mv.setAttribute("exposure", "1");
+        mv.src = url;
+        if (isUSDZ) mv.setAttribute("ios-src", url);
+        mv.style.width = "80%";
+        mv.style.height = "60vh";
+        document.body.appendChild(mv);
+        write("🎨 model-viewerを生成しました。ARボタンが出るか確認してください。");
       }
 
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+      // --- Three.js テスト ---
+      function testThree(url) {
+        write("🎨 Three.jsの読み込みを開始します。");
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+        const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
         renderer.setSize(window.innerWidth, window.innerHeight);
-      });
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        document.body.appendChild(THREE.ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] }));
+
+        const texture = new THREE.TextureLoader().load(url);
+        const geometry = new THREE.PlaneGeometry(0.5, 0.35);
+        const material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.z = -1;
+        scene.add(mesh);
+
+        renderer.setAnimationLoop(() => renderer.render(scene, camera));
+        write("📸 画像を読み込みました。ARボタンが表示されるか確認してください。");
+      }
     </script>
   </body>
 </html>
