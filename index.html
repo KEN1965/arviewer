@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>GLB + USDZ AR Viewer（中央ボタン版・最終）</title>
+  <title>GLB + USDZ AR Viewer（AR体験ボタン版）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module"
     src="https://unpkg.com/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
@@ -36,7 +36,7 @@
 
     input[type="file"] { display: none; }
 
-    /* ✅ ファイル選択ボタンを画面中央に */
+    /* ✅ ファイル選択ボタンを中央に */
     label {
       background: #0078d7;
       color: white;
@@ -80,12 +80,12 @@
       overflow: hidden;
     }
 
-    /* ✅ ARボタン（下中央／AR文字付き） */
+    /* ✅ ARボタン（青＋"AR体験"に変更） */
     model-viewer::part(default-ar-button) {
       background-color: #0078d7 !important;
       color: #fff !important;
       border-radius: 50px;
-      padding: 14px 28px;
+      padding: 14px 32px;
       font-size: 18px;
       font-weight: 600;
       box-shadow: 0 4px 8px rgba(0,0,0,0.25);
@@ -96,7 +96,7 @@
     }
 
     model-viewer::part(default-ar-button)::before {
-      content: "AR";
+      content: "AR体験";
     }
 
     model-viewer::part(default-ar-button):hover {
@@ -133,7 +133,7 @@
 
     <!-- 💬 初回のみ表示する案内 -->
     <div class="hint" id="hint">
-      👉 ファイルを選んだ後、下の青い「AR」ボタンを押すとAR体験が始まります。
+      👉 ファイルを選んだ後、下の青い「AR体験」ボタンを押すとARが始まります。
     </div>
 
     <!-- 🧊 モデル表示エリア -->
@@ -169,7 +169,7 @@
 
       viewer.style.display = 'block';
       viewer.scrollIntoView({ behavior: 'smooth' });
-      hint.classList.add('hidden'); // ✅ モデル表示時に案内を非表示
+      hint.classList.add('hidden'); // ✅ モデル表示後は案内を非表示
     });
   </script>
 </body>
