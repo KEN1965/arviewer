@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>GLB + USDZ AR Viewer（UI調整版）</title>
+  <title>GLB + USDZ AR Viewer（UI最終調整版）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module"
     src="https://unpkg.com/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
@@ -58,7 +58,7 @@
 
     model-viewer {
       width: 100%;
-      height: 65vh; /* ✅ 画面内に収まるように調整 */
+      height: 65vh;
       display: none;
       margin-top: 20px;
       background: white;
@@ -68,14 +68,20 @@
       overflow: hidden;
     }
 
-    /* ✅ ARボタンを押しやすくするための余白 */
+    /* ✅ ARボタンを青色に変更＋押しやすい位置に */
     model-viewer::part(default-ar-button) {
+      background-color: #0078d7 !important;
+      color: #fff !important;
+      border-radius: 50px;
       bottom: 24px !important;
       right: 24px !important;
-      border-radius: 50px;
-      padding: 14px 24px;
+      padding: 14px 28px;
       font-size: 18px;
-      z-index: 20;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    }
+
+    model-viewer::part(default-ar-button):hover {
+      background-color: #005fa3 !important;
     }
 
     footer {
@@ -93,7 +99,14 @@
 
     @media (max-width: 768px) {
       label { font-size: 18px; padding: 16px 34px; }
-      model-viewer { height: 60vh; } /* モバイルは少し短く */
+      model-viewer { height: 60vh; }
+    }
+
+    /* ✅ 案内コメント */
+    .hint {
+      font-size: 16px;
+      color: #333;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -105,6 +118,8 @@
     <div class="controls">
       <label for="fileInput">📂 ファイルを選択（.glb / .usdz）</label>
       <input id="fileInput" type="file" accept=".glb,.usdz" />
+
+      <div class="hint">👉 ファイルを選んだ後、右下の青い「AR」ボタンを押すとAR体験できます。</div>
 
       <model-viewer id="viewer"
         ar
