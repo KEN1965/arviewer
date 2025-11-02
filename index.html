@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>GLB + USDZ AR Viewer（AR体験ボタン版）</title>
+  <title>GLB + USDZ AR Viewer（AR体験ボタン修正版）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module"
     src="https://unpkg.com/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
@@ -36,7 +36,7 @@
 
     input[type="file"] { display: none; }
 
-    /* ✅ ファイル選択ボタンを中央に */
+    /* 📂 ファイル選択ボタンを画面中央に配置 */
     label {
       background: #0078d7;
       color: white;
@@ -53,7 +53,7 @@
       transform: scale(1.05);
     }
 
-    /* ✅ 案内文 */
+    /* 💬 案内文（最初だけ表示） */
     .hint {
       font-size: 18px;
       color: #333;
@@ -67,7 +67,7 @@
       height: 0;
     }
 
-    /* ✅ モデル表示エリア */
+    /* 🧊 モデル表示エリア */
     model-viewer {
       width: 100%;
       height: 60vh;
@@ -80,19 +80,22 @@
       overflow: hidden;
     }
 
-    /* ✅ ARボタン（青＋"AR体験"に変更） */
+    /* ✅ 「AR体験」ボタンをしっかり中央に表示（文字が切れないよう調整） */
     model-viewer::part(default-ar-button) {
       background-color: #0078d7 !important;
       color: #fff !important;
       border-radius: 50px;
-      padding: 14px 32px;
-      font-size: 18px;
+      padding: 16px 44px; /* ← 横幅を広げて文字を収める */
+      font-size: 20px;
       font-weight: 600;
+      letter-spacing: 1px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.25);
       position: absolute !important;
       bottom: 24px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
+      white-space: nowrap; /* ✅ 文字を1行で表示 */
+      text-align: center;
     }
 
     model-viewer::part(default-ar-button)::before {
@@ -119,6 +122,10 @@
     @media (max-width: 768px) {
       label { font-size: 20px; padding: 18px 40px; }
       model-viewer { height: 55vh; }
+      model-viewer::part(default-ar-button) {
+        padding: 14px 40px; /* モバイル向け微調整 */
+        font-size: 18px;
+      }
     }
   </style>
 </head>
@@ -127,16 +134,13 @@
   <header>GLB + USDZ AR Viewer</header>
 
   <main>
-    <!-- 🎯 中央のファイル選択ボタン -->
     <label for="fileInput">📂 ファイルを選択（.glb / .usdz）</label>
     <input id="fileInput" type="file" accept=".glb,.usdz" />
 
-    <!-- 💬 初回のみ表示する案内 -->
     <div class="hint" id="hint">
-      👉 ファイルを選んだ後、下の青い「AR体験」ボタンを押すとARが始まります。
+      👉 ファイルを選んだ後、<Br>下の「AR体験」ボタンを押すとARが始まります。
     </div>
 
-    <!-- 🧊 モデル表示エリア -->
     <model-viewer id="viewer"
       ar
       ar-modes="scene-viewer quick-look webxr"
@@ -169,7 +173,7 @@
 
       viewer.style.display = 'block';
       viewer.scrollIntoView({ behavior: 'smooth' });
-      hint.classList.add('hidden'); // ✅ モデル表示後は案内を非表示
+      hint.classList.add('hidden'); // ✅ モデル表示後に案内を非表示
     });
   </script>
 </body>
