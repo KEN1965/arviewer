@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>GLB 3D + AR Viewer</title>
+  <title>GLB AR Viewer（再現版）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
@@ -10,7 +10,7 @@
     html, body {
       margin: 0; padding: 0; height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f2f5f8; color: #111;
+      background: #f2f5f8;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       text-align: center;
@@ -63,7 +63,7 @@
 
   <main>
     <div class="controls">
-      <label for="fileInput">📂 ファイルを選択して下さい（.glb）</label>
+      <label for="fileInput">📂 ファイルを選択（.glb）</label>
       <input id="fileInput" type="file" accept=".glb" />
 
       <model-viewer id="viewer"
@@ -76,7 +76,7 @@
     </div>
   </main>
 
-  <footer>© 2025 Digital School LOCO</footer>
+  <footer>© 2025</footer>
 
   <script>
     const viewer = document.getElementById('viewer');
@@ -88,14 +88,12 @@
 
       const url = URL.createObjectURL(file);
 
-      // 3D表示用
+      // ✅ 前と同じ：GLBをそのまま3D表示＋AR起動両方に設定
       viewer.src = url;
-
-      // iPhone向けにAR(QuickLook)用URLも設定
       viewer.setAttribute('ios-src', url);
 
       viewer.style.display = 'block';
-      viewer.scrollIntoView({ behavior: 'smooth' });
+      viewer.scrollIntoView({ behavior: "smooth" });
     });
   </script>
 </body>
