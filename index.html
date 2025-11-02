@@ -2,139 +2,161 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>AR Viewer Diagnostic Test</title>
+    <title>GLB & USDZ AR Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- model-viewer -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/webxr/ARButton.js"></script>
+
     <style>
       html, body {
-        margin: 0; padding: 0; height: 100%;
+        margin: 0;
+        padding: 0;
+        height: 100%;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background-color: #f2f5f8;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         text-align: center;
       }
+
       header {
-        position: absolute; top: 0; width: 100%;
-        background-color: #0078d7; color: white;
-        padding: 14px 0; font-size: 18px; font-weight: 600;
+        width: 100%;
+        background-color: #0078d7;
+        color: white;
+        padding: 14px 0;
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10;
       }
-      label {
-        background-color: #0078d7; color: white;
-        padding: 14px 28px; border-radius: 30px;
-        cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        transition: 0.3s;
+
+      main {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-top: 60px;
+        margin-bottom: 50px;
       }
-      label:hover { background-color: #005fa3; }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+      }
+
       input[type="file"] { display: none; }
-      #log {
-        background: #fff; border-radius: 8px; padding: 12px; width: 85%;
-        margin-top: 20px; font-size: 14px; color: #333;
-        text-align: left; white-space: pre-line;
+
+      label {
+        background-color: #0078d7;
+        color: white;
+        padding: 18px 38px;
+        border-radius: 50px;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
       }
+
+      label:hover {
+        background-color: #005fa3;
+        transform: scale(1.05);
+      }
+
+      .note {
+        color: #0078d7;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 1.6;
+        margin-top: 8px;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 70vh;
+        display: none;
+        margin-top: 30px;
+      }
+
       footer {
-        position: absolute; bottom: 10px; font-size: 12px; color: #555;
+        width: 100%;
+        text-align: center;
+        font-size: 13px;
+        color: #555;
+        padding: 15px 0;
+        border-top: 1px solid #ddd;
+      }
+
+      @media (max-width: 768px) {
+        label {
+          font-size: 18px;
+          padding: 16px 32px;
+        }
+        .note {
+          font-size: 15px;
+        }
       }
     </style>
   </head>
 
   <body>
-    <header>🔍 AR Viewer Diagnostic Test</header>
+    <header>GLB & USDZ AR Viewer</header>
 
-    <label for="fileInput">📂 ファイルを選択 (.glb / .usdz / .jpg / .png)</label>
-    <input type="file" id="fileInput" accept=".glb,.usdz,.jpg,.jpeg,.png">
+    <main>
+      <div class="controls">
+        <!-- 📂 ボタン中央配置 -->
+        <label for="fileInput">📂 ファイルを選択 (.glb / .usdz)</label>
+        <input type="file" id="fileInput" accept=".glb,.usdz">
 
-    <div id="log">🔹 状態をチェック中...</div>
+        <!-- 💬 ボタン下の案内文 -->
+        <p class="note">📱 Androidは <b>.glb</b>、iPhoneは <b>.usdz</b> を選んでください。</p>
+
+        <!-- 🧊 モデル表示エリア -->
+        <model-viewer id="viewer"
+          ar
+          ar-modes="scene-viewer quick-look webxr"
+          camera-controls
+          auto-rotate
+          exposure="1">
+        </model-viewer>
+      </div>
+    </main>
+
     <footer>© 2025 Digital School LOCO</footer>
 
     <script>
-      const log = document.getElementById("log");
+      const viewer = document.getElementById("viewer");
       const fileInput = document.getElementById("fileInput");
 
-      // ログ出力補助
-      function write(msg) {
-        console.log(msg);
-        log.textContent += `\n${msg}`;
-      }
-
-      // 初期チェック
-      write("✅ JavaScript 実行開始");
-      if (window.isSecureContext) {
-        write("🔒 HTTPS環境です（OK）");
-      } else {
-        write("⚠️ HTTP または file:// で開いています。HTTPSで再度試してください。");
-      }
-
-      if ('xr' in navigator) {
-        write("🧭 WebXR API 検出: 利用可能です");
-      } else {
-        write("⚠️ WebXR API が検出されません。Safari設定で WebXR を有効化してください。");
-      }
-
-      if (navigator.userAgent.includes("iPhone")) write("📱 iPhoneでアクセスしています。");
-      if (navigator.userAgent.includes("Android")) write("🤖 Androidでアクセスしています。");
-
-      // ファイル選択イベント
-      fileInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
+      fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
         if (!file) return;
-        write(`📁 ファイル選択: ${file.name}`);
 
-        const ext = file.name.split('.').pop().toLowerCase();
         const url = URL.createObjectURL(file);
+        viewer.style.display = "block";
+        viewer.src = url;
 
-        if (ext === "glb") {
-          write("🧊 GLBファイルとして検出。<model-viewer> に読み込みます。");
-          testModelViewer(url);
-        } else if (ext === "usdz") {
-          write("🍏 USDZファイルとして検出。Quick Look対応。");
-          testModelViewer(url, true);
-        } else if (["jpg","jpeg","png"].includes(ext)) {
-          write("🖼 画像ファイルとして検出。Three.jsで読み込みます。");
-          testThree(url);
+        // iPhone (USDZ) の場合
+        if (file.name.endsWith(".usdz")) {
+          viewer.setAttribute("ios-src", url);
         } else {
-          write("❓ 未対応の拡張子です。");
+          viewer.removeAttribute("ios-src");
         }
+
+        // スクロールでモデルを表示
+        viewer.scrollIntoView({ behavior: "smooth" });
       });
-
-      // --- model-viewerテスト ---
-      function testModelViewer(url, isUSDZ = false) {
-        const mv = document.createElement("model-viewer");
-        mv.setAttribute("ar", "");
-        mv.setAttribute("camera-controls", "");
-        mv.setAttribute("auto-rotate", "");
-        mv.setAttribute("exposure", "1");
-        mv.src = url;
-        if (isUSDZ) mv.setAttribute("ios-src", url);
-        mv.style.width = "80%";
-        mv.style.height = "60vh";
-        document.body.appendChild(mv);
-        write("🎨 model-viewerを生成しました。ARボタンが出るか確認してください。");
-      }
-
-      // --- Three.js テスト ---
-      function testThree(url) {
-        write("🎨 Three.jsの読み込みを開始します。");
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-        const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.xr.enabled = true;
-        document.body.appendChild(renderer.domElement);
-
-        document.body.appendChild(THREE.ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] }));
-
-        const texture = new THREE.TextureLoader().load(url);
-        const geometry = new THREE.PlaneGeometry(0.5, 0.35);
-        const material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.z = -1;
-        scene.add(mesh);
-
-        renderer.setAnimationLoop(() => renderer.render(scene, camera));
-        write("📸 画像を読み込みました。ARボタンが表示されるか確認してください。");
-      }
     </script>
   </body>
 </html>
