@@ -85,6 +85,27 @@ font-size:12px;
 opacity:0.6;
 margin-top:15px;
 }
+.usdzMessage{
+
+display:none;
+
+position:fixed;
+bottom:120px;
+
+left:50%;
+transform:translateX(-50%);
+
+font-size:22px;
+
+color:white;
+
+text-align:center;
+
+padding:20px;
+
+max-width:90%;
+
+}
 
 </style>
 
@@ -111,15 +132,9 @@ ar
 ar-modes="scene-viewer quick-look webxr"
 style="display:none"> </model-viewer>
 
-<div class="arArea" id="arArea">
-
-<p class="arText">
-👉 ファイルを選んだ後、<br>
-下の「AR体験」ボタンを押すとARが始まります。
-</p>
-
-<button id="arButton">AR体験</button>
-
+<div id="usdzMessage" class="usdzMessage">
+📱 このモデルはAR専用です。<br>
+下の「AR体験」ボタンを押してARでご覧ください。
 </div>
 
 <div class="footer">
@@ -144,26 +159,26 @@ viewer.style.display="block"
 
 if(ext==="glb"){
 
-// GLB表示
+viewer.style.display="block"
+
 viewer.src=url
 viewer.removeAttribute("ios-src")
 
-}
+usdzMessage.style.display="none"
 
+}
 if(ext==="usdz"){
 
-// GLB表示を完全削除
+viewer.style.display="none"
+
 viewer.src=""
 viewer.removeAttribute("src")
 
-// USDZをAR用にセット
 viewer.setAttribute("ios-src",url)
 
+usdzMessage.style.display="block"
+
 }
-
-arArea.style.display="block"
-
-})
 
 // ARボタン
 arButton.addEventListener("click", () => {
