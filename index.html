@@ -121,12 +121,13 @@ background:#0a84ff;
 @media (max-width:600px){
 	.arArea{
 		/* 下部の安全領域を考慮してボタンが隠れないようにする */
-		bottom:calc(12px + env(safe-area-inset-bottom, 12px));
+		/* ブラウザのUIで隠れやすいため余裕を多めに取る */
+		bottom:calc(40px + env(safe-area-inset-bottom, 20px));
 		max-width:640px;
 		padding:0 12px;
 		width:calc(100% - 24px);
 		box-sizing:border-box;
-		z-index:9999;
+		z-index:2147483647;
 	}
 	#arButton{
 		padding:12px 18px;
@@ -212,6 +213,7 @@ const ext = file.name.split(".").pop().toLowerCase()
 
 // 完全リセット
 viewer.removeAttribute("src")
+viewer.src = ''
 viewer.removeAttribute("ios-src")
 
 viewer.style.display="block"
