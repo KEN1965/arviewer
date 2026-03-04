@@ -143,21 +143,33 @@ const ext = file.name.split(".").pop().toLowerCase()
 viewer.style.display="block"
 
 if(ext==="glb"){
+
+// GLB表示
 viewer.src=url
 viewer.removeAttribute("ios-src")
+
 }
 
 if(ext==="usdz"){
+
+// GLB表示を完全削除
+viewer.src=""
 viewer.removeAttribute("src")
+
+// USDZをAR用にセット
 viewer.setAttribute("ios-src",url)
+
 }
 
 arArea.style.display="block"
 
 })
 
+// ARボタン
 arButton.addEventListener("click", () => {
+
 viewer.activateAR()
+
 })
 
 </script>
