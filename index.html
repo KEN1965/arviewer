@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>KEN AR Viewer</title>
+<title>AR Viewer</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -109,7 +109,15 @@ font-size:12px;
 opacity:0.6;
 margin-top:14px;
 }
+model-viewer::part(default-ar-button){
 
+position:absolute !important;
+
+bottom:160px !important;   /* ← 上に移動 */
+
+right:16px !important;
+
+}
 </style>
 
 </head>
@@ -151,7 +159,7 @@ style="display:none"> </model-viewer>
 </div>
 
 <div class="footer">
-KEN AR Viewer
+AR Viewer
 </div>
 
 <script>
