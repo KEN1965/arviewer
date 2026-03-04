@@ -147,6 +147,7 @@ const viewer = document.getElementById("viewer")
 const fileInput = document.getElementById("fileInput")
 const arButton = document.getElementById("arButton")
 const arArea = document.getElementById("arArea")
+const usdzMessage = document.getElementById("usdzMessage")
 
 fileInput.addEventListener("change", e => {
 
@@ -159,28 +160,31 @@ viewer.style.display="block"
 
 if(ext==="glb"){
 
-viewer.style.display="block"
-
+// GLB表示
 viewer.src=url
 viewer.removeAttribute("ios-src")
 
 usdzMessage.style.display="none"
 
 }
+
 if(ext==="usdz"){
 
-viewer.style.display="none"
-
+// GLBモデルを消す
 viewer.src=""
 viewer.removeAttribute("src")
 
+// AR用USDZ
 viewer.setAttribute("ios-src",url)
 
 usdzMessage.style.display="block"
 
 }
 
-// ARボタン
+arArea.style.display="block"
+
+})
+
 arButton.addEventListener("click", () => {
 
 viewer.activateAR()
