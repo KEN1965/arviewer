@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja">
 
+<html lang="ja">
 <head>
 
 <meta charset="UTF-8">
-<title>AR Viewer</title>
+<title>GLB + USDZ AR Viewer</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module"
 src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
@@ -30,38 +30,60 @@ font-weight:600;
 
 #viewer{
 width:100%;
-height:75vh;
+height:70vh;
 background:#000;
 }
 
 .toolbar{
-margin:15px;
+margin:20px;
 }
 
-label,button{
-
-background:#1f6feb;
-border:none;
+label{
+background:#0078d7;
 color:white;
-padding:12px 18px;
+padding:14px 30px;
 border-radius:8px;
-font-size:14px;
 cursor:pointer;
-
+font-size:18px;
 }
 
-label:hover,button:hover{
-background:#388bfd;
+label:hover{
+background:#0a84ff;
 }
 
 input[type=file]{
 display:none;
 }
 
+.arArea{
+margin-top:20px;
+display:none;
+}
+
+.arText{
+font-size:18px;
+margin-bottom:12px;
+}
+
+#arButton{
+background:#0078d7;
+color:white;
+border:none;
+padding:16px 40px;
+font-size:20px;
+border-radius:40px;
+cursor:pointer;
+box-shadow:0 6px 12px rgba(0,0,0,0.3);
+}
+
+#arButton:hover{
+background:#0a84ff;
+}
+
 .footer{
 font-size:12px;
 opacity:0.6;
-margin-top:10px;
+margin-top:15px;
 }
 
 </style>
@@ -70,35 +92,35 @@ margin-top:10px;
 
 <body>
 
-<header>KEN AR VIEWER</header>
+<header>GLB + USDZ AR Viewer</header>
 
 <div class="toolbar">
-
-<label for="fileInput">📂 モデル選択</label>
-<button onclick="shareLink()">🔗 共有</button>
-
+<label for="fileInput">📂 モデルを選択 (.glb / .usdz)</label>
 </div>
 
 <input id="fileInput" type="file" accept=".glb,.usdz">
 
 <model-viewer
-
 id="viewer"
-
 camera-controls
 auto-rotate
 auto-rotate-delay="0"
-
 shadow-intensity="1"
-
 environment-image="https://modelviewer.dev/shared-assets/environments/spruit_sunrise_1k_HDR.hdr"
-
 ar
 ar-modes="scene-viewer quick-look webxr"
+style="display:none"> </model-viewer>
 
-style="display:none">
+<div class="arArea" id="arArea">
 
-</model-viewer>
+<p class="arText">
+👉 ファイルを選んだ後、<br>
+下の「AR体験」ボタンを押すとARが始まります。
+</p>
+
+<button id="arButton">AR体験</button>
+
+</div>
 
 <div class="footer">
 GLB / USDZ AR Viewer
@@ -108,15 +130,12 @@ GLB / USDZ AR Viewer
 
 const viewer = document.getElementById("viewer")
 const fileInput = document.getElementById("fileInput")
+const arButton = document.getElementById("arButton")
+const arArea = document.getElementById("arArea")
 
-let glbURL = null
-let usdzURL = null
-
-// ファイル選択
 fileInput.addEventListener("change", e => {
 
 const file = e.target.files[0]
-
 const url = URL.createObjectURL(file)
 
 const ext = file.name.split(".").pop().toLowerCase()
@@ -124,36 +143,22 @@ const ext = file.name.split(".").pop().toLowerCase()
 viewer.style.display="block"
 
 if(ext==="glb"){
-
-glbURL=url
-viewer.src=glbURL
-
+viewer.src=url
+viewer.removeAttribute("ios-src")
 }
 
 if(ext==="usdz"){
-
-usdzURL=url
-viewer.setAttribute("ios-src",usdzURL)
-
+viewer.removeAttribute("src")
+viewer.setAttribute("ios-src",url)
 }
+
+arArea.style.display="block"
 
 })
 
-// URL共有
-function shareLink(){
-
-if(!glbURL){
-alert("モデルを読み込んでください")
-return
-}
-
-const url=location.origin+location.pathname+"?model="+glbURL
-
-navigator.clipboard.writeText(url)
-
-alert("リンクコピーしました")
-
-}
+arButton.addEventListener("click", () => {
+viewer.activateAR()
+})
 
 </script>
 
